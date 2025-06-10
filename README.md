@@ -39,7 +39,6 @@ Examples:
 - **Forecast Visualizations**: Line plots comparing actual vs predicted NDVI and wind
 - **Adaptation Alerts**: Instant decision support messages based on conditions
 
-## Repository Structure
 
 ## Repository Structure
 
@@ -78,4 +77,4 @@ python climate_model.py
 
 ## Demo
 
-![Dashboard Preview](streamlit_app/assets/dashboard_preview.png)
+![Dashboard Preview](dashboard_preview.png)
