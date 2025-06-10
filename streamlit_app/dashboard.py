@@ -27,7 +27,7 @@ st.markdown(
 st.markdown("### Choose Data Mode")
 mode = st.radio(
     label="",
-    options=["🔴 Real-time Sensor Simulation", "📈 Model Forecasts"],
+    options=["Real-time Sensor Simulation", "📈 Model Forecasts"],
     horizontal=True,
     label_visibility="collapsed"
 )
@@ -46,7 +46,7 @@ def adaptation_advice(ndvi, rainfall, wind_speed):
     return advice
 
 # --- Real-time Sensor Simulation ---
-if mode == "🔴 Real-time Sensor Simulation":
+if mode == "Real-time Sensor Simulation":
     def get_sensor_data():
         return {
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -110,13 +110,13 @@ elif mode == "📈 Model Forecasts":
     # --- NDVI Forecasts ---
     st.subheader("🌿 NDVI Forecasts")
     display_forecast_row([
-        "../outputs/NDVI_predictions_NDVI_t+1.csv",
-        "../outputs/NDVI_predictions_NDVI_t+7.csv"
+        "outputs/NDVI_predictions_NDVI_t+1.csv",
+        "outputs/NDVI_predictions_NDVI_t+7.csv"
     ], "Actual NDVI", "Predicted NDVI")
 
     display_forecast_row([
-        "../outputs/NDVI_predictions_NDVI_t+16.csv",
-        "../outputs/NDVI_predictions_NDVI_t+30.csv"
+        "outputs/NDVI_predictions_NDVI_t+16.csv",
+        "outputs/NDVI_predictions_NDVI_t+30.csv"
     ], "Actual NDVI", "Predicted NDVI")
 
     st.markdown("## ")
@@ -127,7 +127,7 @@ elif mode == "📈 Model Forecasts":
         unsafe_allow_html=True
     )
     try:
-        ndvi_metrics = pd.read_csv("../outputs/NDVI_forecast_metrics.csv")
+        ndvi_metrics = pd.read_csv("outputs/NDVI_forecast_metrics.csv")
         st.dataframe(ndvi_metrics)
     except:
         st.warning("NDVI model metrics not found.")
@@ -137,13 +137,13 @@ elif mode == "📈 Model Forecasts":
     # --- Wind Forecasts ---
     st.subheader("🌬️ Wind Forecasts")
     display_forecast_row([
-        "../outputs/Wind_WindSpeed_t+1_forecast.csv",
-        "../outputs/Wind_WindSpeed_t+3_forecast.csv"
+        "outputs/Wind_WindSpeed_t+1_forecast.csv",
+        "outputs/Wind_WindSpeed_t+3_forecast.csv"
     ], "Actual", "Predicted")
 
     display_forecast_row([
-        "../outputs/Wind_WindDir_t+1_forecast.csv",
-        "../outputs/Wind_WindDir_t+7_forecast.csv"
+        "outputs/Wind_WindDir_t+1_forecast.csv",
+        "outputs/Wind_WindDir_t+7_forecast.csv"
     ], "Actual", "Predicted")
 
     st.markdown("## ")
@@ -154,7 +154,7 @@ elif mode == "📈 Model Forecasts":
         unsafe_allow_html=True
     )
     try:
-        wind_metrics = pd.read_csv("../outputs/Wind_forecast_metrics.csv")
+        wind_metrics = pd.read_csv("outputs/Wind_forecast_metrics.csv")
         st.dataframe(wind_metrics)
     except:
         st.warning("Wind model metrics not found.")
