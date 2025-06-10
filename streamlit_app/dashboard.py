@@ -7,14 +7,32 @@ import time
 import matplotlib.pyplot as plt
 import os
 
+# --- Page Config ---
 st.set_page_config(page_title="🌱 GreenX Dashboard", layout="wide")
-st.title("🌿 The Green Flags - Climate Dashboard")
-st.markdown("Real-time simulation of environmental conditions and decision support.")
 
-# --- MODE SWITCHER ---
-mode = st.radio("Choose Data Mode", ["🔴 Real-time Sensor Simulation", "📈 Model Forecasts"])
+# --- Centered Title and Subtitle (Adjusted Margins to Move Up) ---
+st.markdown(
+    """
+    <h1 style='text-align: center; font-size: 40px; margin-bottom: 5px; margin-top: 10px;'>
+        The Green Flags - Climate Dashboard
+    </h1>
+    <p style='text-align: center; font-size: 18px; margin-top: -5px; margin-bottom: 10px;'>
+        Real-time simulation of environmental conditions and decision support.
+    </p>
+    """,
+    unsafe_allow_html=True
+)
 
-# --- DECISION SYSTEM ---
+# --- Data Mode Switcher (Left-aligned) ---
+st.markdown("### Choose Data Mode")
+mode = st.radio(
+    label="",
+    options=["🔴 Real-time Sensor Simulation", "📈 Model Forecasts"],
+    horizontal=True,
+    label_visibility="collapsed"
+)
+
+# --- Adaptation Logic ---
 def adaptation_advice(ndvi, rainfall, wind_speed):
     advice = []
     if ndvi < 0.3:
@@ -27,7 +45,7 @@ def adaptation_advice(ndvi, rainfall, wind_speed):
         advice.append("✅ Conditions stable. No immediate action needed.")
     return advice
 
-# --- REAL-TIME SENSOR SIMULATION ---
+# --- Real-time Sensor Simulation ---
 if mode == "🔴 Real-time Sensor Simulation":
     def get_sensor_data():
         return {
@@ -58,10 +76,11 @@ if mode == "🔴 Real-time Sensor Simulation":
 
     st.success("✅ Simulation complete.")
 
-# --- MODEL FORECASTS SECTION ---
+# --- Model Forecasts View ---
 elif mode == "📈 Model Forecasts":
+
     def plot_forecast(df, actual_col, pred_col, title):
-        fig, ax = plt.subplots(figsize=(5.5, 2.5))  # Smaller plot
+        fig, ax = plt.subplots(figsize=(5.5, 2.5))
         ax.plot(df['Date'], df[actual_col], label='Actual', linewidth=2)
         ax.plot(df['Date'], df[pred_col], label='Predicted', linestyle='--')
         ax.set_xlabel("Date")
@@ -83,7 +102,7 @@ elif mode == "📈 Model Forecasts":
                     st.dataframe(df.tail(5), use_container_width=True)
                     fig = plot_forecast(df, actual_col, pred_col, file)
                     st.pyplot(fig)
-                    st.markdown("---")  # Add spacing under each forecast
+                    st.markdown("---")
             except Exception as e:
                 with cols[i % 2]:
                     st.warning(f"⚠️ Could not load {file}: {e}")
@@ -91,49 +110,51 @@ elif mode == "📈 Model Forecasts":
     # --- NDVI Forecasts ---
     st.subheader("🌿 NDVI Forecasts")
     display_forecast_row([
-        "NDVI_predictions_NDVI_t+1.csv",
-        "NDVI_predictions_NDVI_t+7.csv"
+        "../outputs/NDVI_predictions_NDVI_t+1.csv",
+        "../outputs/NDVI_predictions_NDVI_t+7.csv"
     ], "Actual NDVI", "Predicted NDVI")
-
-    st.markdown(" ")  # Small spacer
 
     display_forecast_row([
-        "NDVI_predictions_NDVI_t+16.csv",
-        "NDVI_predictions_NDVI_t+30.csv"
+        "../outputs/NDVI_predictions_NDVI_t+16.csv",
+        "../outputs/NDVI_predictions_NDVI_t+30.csv"
     ], "Actual NDVI", "Predicted NDVI")
 
-    st.markdown("## ")  # Space between NDVI and performance
+    st.markdown("## ")
 
-    # --- NDVI Performance ---
-    st.subheader("📊 NDVI Model Performance Summary")
+    # --- NDVI Performance (Centered) ---
+    st.markdown(
+        "<h3 style='text-align: center;'>📊 NDVI Model Performance Summary</h3>",
+        unsafe_allow_html=True
+    )
     try:
-        ndvi_metrics = pd.read_csv("NDVI_forecast_metrics.csv")
+        ndvi_metrics = pd.read_csv("../outputs/NDVI_forecast_metrics.csv")
         st.dataframe(ndvi_metrics)
     except:
         st.warning("NDVI model metrics not found.")
 
-    st.markdown("## ")  # Extra space before wind
+    st.markdown("## ")
 
-    # --- WIND Forecasts ---
+    # --- Wind Forecasts ---
     st.subheader("🌬️ Wind Forecasts")
     display_forecast_row([
-        "Wind_WindSpeed_t+1_forecast.csv",
-        "Wind_WindSpeed_t+3_forecast.csv"
+        "../outputs/Wind_WindSpeed_t+1_forecast.csv",
+        "../outputs/Wind_WindSpeed_t+3_forecast.csv"
     ], "Actual", "Predicted")
-
-    st.markdown(" ")  # Small spacer
 
     display_forecast_row([
-        "Wind_WindDir_t+1_forecast.csv",
-        "Wind_WindDir_t+7_forecast.csv"
+        "../outputs/Wind_WindDir_t+1_forecast.csv",
+        "../outputs/Wind_WindDir_t+7_forecast.csv"
     ], "Actual", "Predicted")
 
-    st.markdown("## ")  # Space before wind metrics
+    st.markdown("## ")
 
-    # --- WIND Performance ---
-    st.subheader("📊 Wind Model Performance Summary")
+    # --- Wind Performance (Centered) ---
+    st.markdown(
+        "<h3 style='text-align: center;'>📊 Wind Model Performance Summary</h3>",
+        unsafe_allow_html=True
+    )
     try:
-        wind_metrics = pd.read_csv("Wind_forecast_metrics.csv")
+        wind_metrics = pd.read_csv("../outputs/Wind_forecast_metrics.csv")
         st.dataframe(wind_metrics)
     except:
         st.warning("Wind model metrics not found.")
