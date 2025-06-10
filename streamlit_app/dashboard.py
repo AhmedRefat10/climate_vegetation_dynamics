@@ -58,8 +58,8 @@ if mode == "Real-time Sensor Simulation":
     placeholder = st.empty()
     data_log = []
 
-    # Run for 1 min 30 sec = 90 sec with 5 sec intervals => 18 updates
-    for _ in range(18):
+    # 1 minute total time with 3s interval = 20 iterations
+    for _ in range(20):
         row = get_sensor_data()
         data_log.append(row)
         df = pd.DataFrame(data_log).sort_values(by="timestamp", ascending=False)
@@ -73,7 +73,7 @@ if mode == "Real-time Sensor Simulation":
             for tip in advice:
                 st.info(tip)
 
-        time.sleep(5)
+        time.sleep(3)
 
     st.success("✅ Simulation complete.")
 
@@ -122,7 +122,7 @@ elif mode == "📈 Model Forecasts":
 
     st.markdown("## ")
 
-    # --- NDVI Performance ---
+    # --- NDVI Performance (Centered) ---
     st.markdown(
         "<h3 style='text-align: center;'>NDVI Model Performance Summary</h3>",
         unsafe_allow_html=True
@@ -149,7 +149,7 @@ elif mode == "📈 Model Forecasts":
 
     st.markdown("## ")
 
-    # --- Wind Performance ---
+    # --- Wind Performance (Centered) ---
     st.markdown(
         "<h3 style='text-align: center;'>Wind Model Performance Summary</h3>",
         unsafe_allow_html=True
