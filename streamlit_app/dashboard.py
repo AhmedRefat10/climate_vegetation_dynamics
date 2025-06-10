@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 import os
 
 # --- Page Config ---
-st.set_page_config(page_title="🌱 GreenX Dashboard", layout="wide")
+st.set_page_config(page_title="GreenX Dashboard", layout="wide")
 
-# --- Centered Title and Subtitle (Adjusted Margins to Move Up) ---
+# --- Centered Title and Subtitle ---
 st.markdown(
     """
     <h1 style='text-align: center; font-size: 40px; margin-bottom: 5px; margin-top: 10px;'>
@@ -23,7 +23,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Data Mode Switcher (Left-aligned) ---
+# --- Data Mode Switcher ---
 st.markdown("### Choose Data Mode")
 mode = st.radio(
     label="",
@@ -58,7 +58,8 @@ if mode == "Real-time Sensor Simulation":
     placeholder = st.empty()
     data_log = []
 
-    for _ in range(30):
+    # Run for 1 min 30 sec = 90 sec with 5 sec intervals => 18 updates
+    for _ in range(18):
         row = get_sensor_data()
         data_log.append(row)
         df = pd.DataFrame(data_log).sort_values(by="timestamp", ascending=False)
@@ -67,12 +68,12 @@ if mode == "Real-time Sensor Simulation":
             st.subheader("📊 Latest Sensor Data")
             st.dataframe(df.head(10), use_container_width=True)
 
-            st.subheader("🧠 Adaptation Advice")
+            st.subheader("Adaptation Advice")
             advice = adaptation_advice(row["NDVI"], row["Rainfall (mm)"], row["Wind Speed"])
             for tip in advice:
                 st.info(tip)
 
-        time.sleep(1)
+        time.sleep(5)
 
     st.success("✅ Simulation complete.")
 
@@ -121,9 +122,9 @@ elif mode == "📈 Model Forecasts":
 
     st.markdown("## ")
 
-    # --- NDVI Performance (Centered) ---
+    # --- NDVI Performance ---
     st.markdown(
-        "<h3 style='text-align: center;'>📊 NDVI Model Performance Summary</h3>",
+        "<h3 style='text-align: center;'>NDVI Model Performance Summary</h3>",
         unsafe_allow_html=True
     )
     try:
@@ -148,9 +149,9 @@ elif mode == "📈 Model Forecasts":
 
     st.markdown("## ")
 
-    # --- Wind Performance (Centered) ---
+    # --- Wind Performance ---
     st.markdown(
-        "<h3 style='text-align: center;'>📊 Wind Model Performance Summary</h3>",
+        "<h3 style='text-align: center;'>Wind Model Performance Summary</h3>",
         unsafe_allow_html=True
     )
     try:
