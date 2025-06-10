@@ -41,7 +41,19 @@ Examples:
 
 ## Repository Structure
 
-<pre> ```bash climate_vegetation_dynamics/ ├── climate_model.py # Complete ML forecasting pipeline ├── streamlit_app/ │ ├── dashboard.py # Streamlit frontend interface │ └── assets/ # Forecast visuals, plots ├── outputs/ # Forecast results (CSVs, plots, metrics) ├── data/ # Sample input datasets ├── requirements.txt # Python dependencies ├── .gitignore # Files/folders excluded from version control ├── LICENSE # MIT License (optional) └── README.md # Project overview and documentation ``` </pre>
+## Repository Structure
+
+climate_vegetation_dynamics/
+├── climate_model.py              # Complete ML forecasting pipeline  
+├── streamlit_app/  
+│   ├── dashboard.py              # Streamlit frontend interface  
+│   └── assets/                   # Forecast visuals, plots  
+├── outputs/                      # Forecast results (CSVs, plots, metrics)  
+├── data/                         # Sample input datasets  
+├── requirements.txt              # Python dependencies  
+├── .gitignore                    # Files/folders excluded from version control  
+├── LICENSE                       # MIT License (optional)  
+└── README.md                     # Project overview and documentation
 
 
 ## Getting Started
@@ -52,25 +64,18 @@ pip install -r requirements.txt
 streamlit run streamlit_app/dashboard.py
 python climate_model.py
 
-Dependencies
+## Dependencies
 
-Python 3.8+
-
-pandas
-
-numpy
-
-matplotlib
-
-seaborn
-
-scikit-learn
-
-xgboost
-
-streamlit
+- Python 3.8+
+- pandas
+- numpy
+- matplotlib
+- seaborn
+- scikit-learn
+- xgboost
+- streamlit
 
 
 ## Demo
 
-![Dashboard Preview](E:\Machine Learning\Hackathons\GreenX\Code\dashboard_preview.png)
+![Dashboard Preview](streamlit_app/assets/dashboard_preview.png)
