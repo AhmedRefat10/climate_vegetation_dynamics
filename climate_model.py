@@ -9,7 +9,7 @@ Original file is located at
 
 import pandas as pd
 
-"""Rainfall data; CHIRPS"""
+"""**Rainfall data: CHIRPS**"""
 
 df_rainfall = pd.read_csv('/content/Nairobi_CHIRPS_Rainfall.csv')
 
@@ -65,19 +65,19 @@ df_vegetation.shape
 
 """Downloading the processed data (abhi tak jitna kiya)"""
 
-from google.colab import files
-output_filename = 'rainfall_data.csv'
+# from google.colab import files
+# output_filename = 'rainfall_data.csv'
 
-# Save the DataFrame to a CSV file in the Colab environment
-df_rainfall_new.to_csv(output_filename, index=False)
-print(f"DataFrame saved as '{output_filename}' in Colab.")
+# # Save the DataFrame to a CSV file in the Colab environment
+# df_rainfall_new.to_csv(output_filename, index=False)
+# print(f"DataFrame saved as '{output_filename}' in Colab.")
 
-try:
-    # --- Corrected: Pass the filename string to files.download() ---
-    files.download(output_filename)
-    print(f"'{output_filename}' download initiated to your local machine.")
-except Exception as e:
-    print(f"An error occurred during download: {e}")
+# try:
+#     # --- Corrected: Pass the filename string to files.download() ---
+#     files.download(output_filename)
+#     print(f"'{output_filename}' download initiated to your local machine.")
+# except Exception as e:
+#     print(f"An error occurred during download: {e}")
 
 """---
 
@@ -86,28 +86,28 @@ Merging the datasets
 
 import pandas as pd
 
-# Step 1: Convert date columns to datetime
+#1: Convert date columns to datetime
 df_rainfall_new['date'] = pd.to_datetime(df_rainfall_new['date'])
 df_vegetation['date'] = pd.to_datetime(df_vegetation['Date'])  # assuming original column is 'Date'
 df_wind_new['date'] = pd.to_datetime(df_wind_new['valid_time'])  # assuming original column is 'valid_time'
 
-# Step 2: Resample wind data (hourly → daily average)
+#2: Resample wind data (hourly → daily average)
 wind_daily = df_wind_new.groupby(df_wind_new['date'].dt.date).agg({
     'u10': 'mean',
     'v10': 'mean'
 }).reset_index()
 wind_daily['date'] = pd.to_datetime(wind_daily['date'])
 
-# Step 3: Select relevant columns
+#3: Select relevant columns
 rainfall_clean = df_rainfall_new[['date', 'rainfall_mm']]
 vegetation_clean = df_vegetation[['date', 'MOD13Q1_061__250m_16_days_NDVI']]
 wind_clean = wind_daily[['date', 'u10', 'v10']]
 
-# Step 4: Merge all datasets on 'date'
+#4: Merge all datasets on 'date'
 merged_df = pd.merge(rainfall_clean, vegetation_clean, on='date', how='outer')
 merged_df = pd.merge(merged_df, wind_clean, on='date', how='outer')
 
-# Step 5: Sort and rename columns
+#5: Sort and rename columns
 merged_df = merged_df.sort_values(by='date').reset_index(drop=True)
 merged_df = merged_df.rename(columns={
     'MOD13Q1_061__250m_16_days_NDVI': 'NDVI (Vegetation)',
@@ -125,16 +125,16 @@ merged_df.shape
 
 """Time-Based Linear Interpolation - to fill in the missing values in vegetation"""
 
-# Step 1: Set 'date' as index (required for time interpolation)
+#1: Set 'date' as index (required for time interpolation)
 merged_df.set_index('date', inplace=True)
 
-# Step 2: Interpolate missing NDVI values based on time
+#2: Interpolate missing NDVI values based on time
 merged_df['NDVI (Vegetation)'] = merged_df['NDVI (Vegetation)'].interpolate(method='time')
 
-# Step 3: Reset index to bring 'date' back as a column
+#3: Reset index to bring 'date' back as a column
 merged_df.reset_index(inplace=True)
 
-# Optional: Check if any missing NDVI values remain
+#Check if any missing NDVI values remain
 print("Missing NDVI values after interpolation:", merged_df['NDVI (Vegetation)'].isna().sum())
 
 """--- Handle Missing Data in Other Variables ---"""
@@ -156,7 +156,7 @@ df_final = merged_df.copy()
 
 """---
 
-Lets work on the model now :)
+**Lets work on the model now :)**
 
 Predicting NDVI 16 days ahead
 
@@ -189,7 +189,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
 # ------------------------------------
-# Step 1: Feature Engineering
+# 1: Feature Engineering
 # ------------------------------------
 # Calculate wind speed
 merged_df['Wind Speed'] = np.sqrt(merged_df['Wind u10']**2 + merged_df['Wind v10']**2)
@@ -200,17 +200,17 @@ merged_df['Rainfall_lag'] = merged_df['Rainfall (mm)'].shift(1)
 merged_df['WindSpeed_lag'] = merged_df['Wind Speed'].shift(1)
 
 # ------------------------------------
-# Step 2: Target Variable (NDVI 16 days ahead)
+# 2: Target Variable (NDVI 16 days ahead)
 # ------------------------------------
 merged_df['NDVI_t+16'] = merged_df['NDVI (Vegetation)'].shift(-16)
 
 # ------------------------------------
-# Step 3: Drop missing rows
+# 3: Drop missing rows
 # ------------------------------------
 model_df = merged_df.dropna(subset=['NDVI_lag', 'Rainfall_lag', 'WindSpeed_lag', 'NDVI_t+16'])
 
 # ------------------------------------
-# Step 4: Prepare features and target
+# 4: Prepare features and target
 # ------------------------------------
 features = ['NDVI_lag', 'Rainfall_lag', 'WindSpeed_lag']
 target = 'NDVI_t+16'
@@ -222,13 +222,13 @@ y = model_df[target]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 
 # ------------------------------------
-# Step 5: Train XGBoost Regressor
+# 5: Train XGBoost Regressor
 # ------------------------------------
 xgb_model = XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=4, random_state=42)
 xgb_model.fit(X_train, y_train)
 
 # ------------------------------------
-# Step 6: Predict and evaluate
+# 6: Predict and evaluate
 # ------------------------------------
 y_pred = xgb_model.predict(X_test)
 
@@ -242,7 +242,7 @@ print("RMSE:", rmse)
 print("R² Score:", r2)
 
 # ------------------------------------
-# Step 7: Plot Actual vs Predicted
+# 7: Plot Actual vs Predicted
 # ------------------------------------
 plt.figure(figsize=(12, 5))
 plt.plot(y_test.values, label='Actual NDVI (t+16)', linewidth=2)
@@ -254,7 +254,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-"""Improving the model"""
+"""**Improving the model**"""
 
 # Add More Lag Features
 merged_df['NDVI_lag2'] = merged_df['NDVI (Vegetation)'].shift(2)
@@ -273,7 +273,7 @@ merged_df['DayOfYear'] = merged_df['date'].dt.dayofyear
 # Drop rows with missing values after feature engineering
 model_df = merged_df.dropna()
 
-# Define your feature columns
+# Define feature columns
 features = [
     'NDVI_lag', 'NDVI_lag2', 'NDVI_rolling7',
     'Rainfall_lag', 'Rainfall_lag2', 'Rainfall_rolling7',
@@ -355,7 +355,7 @@ print("Tuned XGBoost RMSE:", rmse)
 print("Tuned XGBoost R² Score:", r2)
 print("Best Params:", random_search.best_params_)
 
-"""Multi-Step NDVI Forecasting"""
+"""**Multi-Step NDVI Forecasting**"""
 
 # 1. Create Multi-step Targets
 merged_df['NDVI_t+1'] = merged_df['NDVI (Vegetation)'].shift(-1)
@@ -397,7 +397,7 @@ for step in targets:
     preds[step] = pred
 
 
-# 4. (Optional) Plot Forecasts
+# 4. Plot Forecasts
 import matplotlib.pyplot as plt
 
 
@@ -433,7 +433,7 @@ df_final['Wind Speed Anomaly'] = df_final['Wind Speed'] - df_final['Wind Speed R
 threshold = df_final['Wind Speed'].quantile(0.95)
 df_final['High Wind Alert'] = df_final['Wind Speed'] > threshold
 
-"""(Optional) Detect Wind Regime Shifts"""
+"""Detect Wind Regime Shifts"""
 
 # Categorize wind direction into cardinal sectors
 def wind_sector(degrees):
@@ -475,7 +475,7 @@ df_final['WindDir_cos'] = np.cos(np.radians(df_final['Wind Direction (degrees)']
 df_final['Month'] = df_final['date'].dt.month
 df_final['DayOfYear'] = df_final['date'].dt.dayofyear
 
-"""2. Create Multi-step Targets"""
+"""2. Multi-step Targets"""
 
 # Targets: Wind speed and direction ahead
 df_final['WindSpeed_t+1'] = df_final['Wind Speed'].shift(-1)
@@ -543,6 +543,11 @@ for target in targets:
 
 """5. Plot Forecasts"""
 
+wind_targets = [
+    'WindSpeed_t+1', 'WindSpeed_t+3', 'WindSpeed_t+7',
+    'WindDir_t+1', 'WindDir_t+3', 'WindDir_t+7'
+]
+
 import matplotlib.pyplot as plt
 
 for target in wind_targets:
@@ -579,336 +584,124 @@ print("\n🧠 Adaptation Advice:")
 for tip in adaptation_advice(sample_ndvi_pred, sample_rainfall, sample_wind):
     print(tip)
 
-"""**Export Visuals and Metrics**"""
-
-import matplotlib.pyplot as plt
-
-# Save NDVI forecasts
-for step in preds:
-    plt.figure(figsize=(12, 4))
-    plt.plot(Y_test[step].values, label='Actual', linewidth=2)
-    plt.plot(preds[step], label='Predicted', linestyle='--')
-    plt.title(f'NDVI Forecast: {step}')
-    plt.xlabel('Time Steps')
-    plt.ylabel('NDVI')
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(f'NDVI_forecast_{step}.png')  # Save each plot
-    plt.close()
-
-# Collect evaluation metrics
-ndvi_metrics = []
-for step in preds:
-    rmse = np.sqrt(mean_squared_error(Y_test[step], preds[step]))
-    r2 = r2_score(Y_test[step], preds[step])
-    ndvi_metrics.append({
-        "Target": step,
-        "RMSE": round(rmse, 4),
-        "R2 Score": round(r2, 4)
-    })
-
-# Convert to DataFrame and save
-metrics_df = pd.DataFrame(ndvi_metrics)
-metrics_df.to_csv("NDVI_forecast_metrics.csv", index=False)
-
-# Save predictions and actual values
-for step in preds:
-    df_preds = pd.DataFrame({
-        "Actual": Y_test[step].values,
-        "Predicted": preds[step]
-    })
-    df_preds.to_csv(f"NDVI_predictions_{step}.csv", index=False)
-
-from google.colab import files
-
-# Download all exported files
-files.download("NDVI_forecast_metrics.csv")
-for step in preds:
-    files.download(f"NDVI_forecast_{step}.png")
-    files.download(f"NDVI_predictions_{step}.csv")
-
-"""Export Forecast Plots (WindSpeed & Direction)"""
-
-import os
-import matplotlib.pyplot as plt
-
-# Create export directory
-export_dir = "wind_forecast_outputs"
-os.makedirs(export_dir, exist_ok=True)
-
-# Export plots for each forecast target
-for target in ['WindSpeed_t+1', 'WindSpeed_t+3', 'WindSpeed_t+7',
-               'WindDir_t+1', 'WindDir_t+3', 'WindDir_t+7']:
-    plt.figure(figsize=(10, 4))
-    # Change Y_test to Y_test_wind here
-    plt.plot(Y_test_wind[target].values, label='Actual', linewidth=2)
-    plt.plot(predictions[target], label='Predicted', linestyle='--')
-    plt.title(f'Forecast: {target}')
-    plt.xlabel('Time Steps')
-    plt.ylabel('Value')
-    plt.legend()
-    plt.grid(True)
-
-    filename = os.path.join(export_dir, f"{target}_forecast.png")
-    plt.savefig(filename)
-    plt.close()
-    print(f"✅ Saved: {filename}")
-
-import pandas as pd
-from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-
-# Collect metrics
-metrics = []
-
-for target in ['WindSpeed_t+1', 'WindSpeed_t+3', 'WindSpeed_t+7',
-               'WindDir_t+1', 'WindDir_t+3', 'WindDir_t+7']:
-    pred = predictions[target]
-    # Ensure you are using Y_test_wind for metrics as well
-    rmse = np.sqrt(mean_squared_error(Y_test_wind[target], pred))
-    r2 = r2_score(Y_test_wind[target], pred)
-    metrics.append({'Target': target, 'RMSE': rmse, 'R²': r2})
-
-# Save to CSV
-metrics_df = pd.DataFrame(metrics)
-metrics_csv_path = os.path.join(export_dir, "wind_forecast_metrics.csv")
-metrics_df.to_csv(metrics_csv_path, index=False)
-print(f"📄 Metrics saved to: {metrics_csv_path}")
-
-import pandas as pd
-from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-
-# Collect metrics
-metrics = []
-
-for target in ['WindSpeed_t+1', 'WindSpeed_t+3', 'WindSpeed_t+7',
-               'WindDir_t+1', 'WindDir_t+3', 'WindDir_t+7']:
-    pred = predictions[target]
-    # rmse = np.sqrt(mean_squared_error(Y_test[target], pred))
-    # r2 = r2_score(Y_test[target], pred)
-    rmse = np.sqrt(mean_squared_error(Y_test_wind[target], pred))
-    r2 = r2_score(Y_test_wind[target], pred)
-    metrics.append({'Target': target, 'RMSE': rmse, 'R²': r2})
-
-# Save to CSV
-metrics_df = pd.DataFrame(metrics)
-metrics_csv_path = os.path.join(export_dir, "wind_forecast_metrics.csv")
-metrics_df.to_csv(metrics_csv_path, index=False)
-print(f"📄 Metrics saved to: {metrics_csv_path}")
-
-from google.colab import files
-import os
-
-# Assuming 'export_dir' is defined and the files are saved there
-export_dir = "wind_forecast_outputs"
-
-print("\nInitiating downloads...")
-
-# Download the metrics CSV
-metrics_csv_path = os.path.join(export_dir, "wind_forecast_metrics.csv")
-try:
-    files.download(metrics_csv_path)
-    print(f"'{metrics_csv_path}' download initiated.")
-except Exception as e:
-    print(f"Error downloading '{metrics_csv_path}': {e}")
-
-# Download each forecast plot
-for target in ['WindSpeed_t+1', 'WindSpeed_t+3', 'WindSpeed_t+7',
-               'WindDir_t+1', 'WindDir_t+3', 'WindDir_t+7']:
-    filename = os.path.join(export_dir, f"{target}_forecast.png")
-    try:
-        files.download(filename)
-        print(f"'{filename}' download initiated.")
-    except Exception as e:
-        print(f"Error downloading '{filename}': {e}")
-
-print("\nAll download commands have been issued. Check your browser's download location.")
-
-"""
-
----
-
-"""
-
-# Save predictions with timestamps
-pred_df = X_test.copy()
-pred_df['Predicted_NDVI_t+16'] = y_pred
-pred_df['Actual_NDVI_t+16'] = y_test.values
-pred_df['Date'] = model_df['date'].iloc[-len(pred_df):].values  # Add dates
-
-pred_df.to_csv("predicted_ndvi.csv", index=False)
-
-from google.colab import files
-files.download("predicted_ndvi.csv")
-
-import pandas as pd
-from google.colab import files
-
-# Reuse your existing wind targets list or redefine it:
-wind_targets = [
-    'WindSpeed_t+1', 'WindSpeed_t+3', 'WindSpeed_t+7',
-    'WindDir_t+1', 'WindDir_t+3', 'WindDir_t+7'
-]
-
-# build a dataframe with actuals and predictions
-# Crucial Change: Use Y_test_wind instead of Y_test
-wind_output = pd.DataFrame(index=Y_test_wind.index) # Use index from Y_test_wind
-
-for target in wind_targets:
-    # Crucial Change: Use Y_test_wind for actual values
-    wind_output[f'Actual_{target}'] = Y_test_wind[target]
-    wind_output[f'Predicted_{target}'] = predictions[target] # 'predictions' is a dict from previous step
-
-# Save to CSV
-wind_output.to_csv("predicted_wind.csv", index=False)
-
-# Download in Colab
-files.download("predicted_wind.csv")
-
-"""Some extra plotting"""
-
-import seaborn as sns
-
-def plot_forecast(actual, predicted, title, ylabel, figsize=(14, 5), save_as=None):
-    plt.figure(figsize=figsize)
-    sns.lineplot(x=range(len(actual)), y=actual, label='Actual', linewidth=2)
-    sns.lineplot(x=range(len(predicted)), y=predicted, label='Predicted', linestyle='--')
-    plt.title(title, fontsize=16)
-    plt.xlabel('Time Steps')
-    plt.ylabel(ylabel)
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    if save_as:
-        plt.savefig(save_as)
-    plt.show()
-
-"""Save Predictions, Plots & Metrics
+"""**Export Visuals and Metrics**
 
 NDVI
 """
 
-# Get dates for test set
-ndvi_dates = model_df['date'].iloc[-len(Y_test):].reset_index(drop=True)
+# # Get dates for test set
+# ndvi_dates = model_df['date'].iloc[-len(Y_test):].reset_index(drop=True)
 
-# For each step, save actual + predicted + date
-for step in preds:
-    df_preds = pd.DataFrame({
-        'Date': ndvi_dates,
-        'Actual NDVI': Y_test[step].values,
-        'Predicted NDVI': preds[step]
-    })
-    df_preds.to_csv(f"NDVI_{step}_forecast.csv", index=False)
+# # For each step, save actual + predicted + date
+# for step in preds:
+#     df_preds = pd.DataFrame({
+#         'Date': ndvi_dates,
+#         'Actual NDVI': Y_test[step].values,
+#         'Predicted NDVI': preds[step]
+#     })
+#     df_preds.to_csv(f"NDVI_{step}_forecast.csv", index=False)
 
-for step in preds:
-    plot_forecast(
-        actual=Y_test[step].values,
-        predicted=preds[step],
-        title=f'NDVI Forecast: {step}',
-        ylabel='NDVI',
-        save_as=f"NDVI_{step}_plot.png"
-    )
+# for step in preds:
+#     plot_forecast(
+#         actual=Y_test[step].values,
+#         predicted=preds[step],
+#         title=f'NDVI Forecast: {step}',
+#         ylabel='NDVI',
+#         save_as=f"NDVI_{step}_plot.png"
+#     )
 
-ndvi_metrics = []
+# ndvi_metrics = []
 
-for step in preds:
-    rmse = np.sqrt(mean_squared_error(Y_test[step], preds[step]))
-    r2 = r2_score(Y_test[step], preds[step])
-    ndvi_metrics.append({
-        'Target': step,
-        'RMSE': round(rmse, 4),
-        'R²': round(r2, 4)
-    })
+# for step in preds:
+#     rmse = np.sqrt(mean_squared_error(Y_test[step], preds[step]))
+#     r2 = r2_score(Y_test[step], preds[step])
+#     ndvi_metrics.append({
+#         'Target': step,
+#         'RMSE': round(rmse, 4),
+#         'R²': round(r2, 4)
+#     })
 
-# Save metrics to CSV
-ndvi_metrics_df = pd.DataFrame(ndvi_metrics)
-ndvi_metrics_df.to_csv("NDVI_forecast_metrics.csv", index=False)
+# # Save metrics to CSV
+# ndvi_metrics_df = pd.DataFrame(ndvi_metrics)
+# ndvi_metrics_df.to_csv("NDVI_forecast_metrics.csv", index=False)
 
 """Wind Pattern"""
 
-# Get dates for wind test set
-wind_dates = df_model['date'].iloc[-len(Y_test_wind):].reset_index(drop=True)
+# # Get dates for wind test set
+# wind_dates = df_model['date'].iloc[-len(Y_test_wind):].reset_index(drop=True)
 
-for target in wind_targets:
-    df_wind = pd.DataFrame({
-        'Date': wind_dates,
-        'Actual': Y_test_wind[target].values,
-        'Predicted': predictions[target]
-    })
-    df_wind.to_csv(f"Wind_{target}_forecast.csv", index=False)
+# for target in wind_targets:
+#     df_wind = pd.DataFrame({
+#         'Date': wind_dates,
+#         'Actual': Y_test_wind[target].values,
+#         'Predicted': predictions[target]
+#     })
+#     df_wind.to_csv(f"Wind_{target}_forecast.csv", index=False)
 
-for target in wind_targets:
-    plot_forecast(
-        actual=Y_test_wind[target].values,
-        predicted=predictions[target],
-        title=f'Wind Forecast: {target}',
-        ylabel='Value',
-        save_as=f"Wind_{target}_plot.png"
-    )
+# for target in wind_targets:
+#     plot_forecast(
+#         actual=Y_test_wind[target].values,
+#         predicted=predictions[target],
+#         title=f'Wind Forecast: {target}',
+#         ylabel='Value',
+#         save_as=f"Wind_{target}_plot.png"
+#     )
 
-wind_metrics = []
+# wind_metrics = []
 
-for target in wind_targets:
-    rmse = np.sqrt(mean_squared_error(Y_test_wind[target], predictions[target]))
-    r2 = r2_score(Y_test_wind[target], predictions[target])
-    wind_metrics.append({
-        'Target': target,
-        'RMSE': round(rmse, 4),
-        'R²': round(r2, 4)
-    })
+# for target in wind_targets:
+#     rmse = np.sqrt(mean_squared_error(Y_test_wind[target], predictions[target]))
+#     r2 = r2_score(Y_test_wind[target], predictions[target])
+#     wind_metrics.append({
+#         'Target': target,
+#         'RMSE': round(rmse, 4),
+#         'R²': round(r2, 4)
+#     })
 
-# Save metrics to CSV
-wind_metrics_df = pd.DataFrame(wind_metrics)
-wind_metrics_df.to_csv("Wind_forecast_metrics.csv", index=False)
+# # Save metrics to CSV
+# wind_metrics_df = pd.DataFrame(wind_metrics)
+# wind_metrics_df.to_csv("Wind_forecast_metrics.csv", index=False)
 
-from google.colab import files
-import glob
+# from google.colab import files
+# import glob
 
-# Download all generated CSVs and PNGs
-for file_path in glob.glob("*.csv") + glob.glob("*.png"):
-    files.download(file_path)
+# # Download all generated CSVs and PNGs
+# for file_path in glob.glob("*.csv") + glob.glob("*.png"):
+#     files.download(file_path)
 
-"""
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# from sklearn.metrics import mean_squared_error, r2_score
+# import numpy as np
+# from google.colab import files
 
----
+# # 1. Export separate CSVs for each NDVI prediction step
+# for step in preds:
+#     df_step = pd.DataFrame({
+#         'Date': model_df['date'].iloc[-len(Y_test):].values,
+#         'Actual NDVI': Y_test[step].values,
+#         'Predicted NDVI': preds[step]
+#     })
+#     filename = f"NDVI_predictions_{step}.csv"
+#     df_step.to_csv(filename, index=False)
+#     files.download(filename)
 
-"""
+# # 2. Save and download plot for each prediction step
+# for step in preds:
+#     plt.figure(figsize=(12, 4))
+#     plt.plot(Y_test[step].values, label='Actual NDVI', linewidth=2)
+#     plt.plot(preds[step], label='Predicted NDVI', linestyle='--')
+#     plt.title(f'NDVI Forecast Plot: {step}')
+#     plt.xlabel('Time Steps')
+#     plt.ylabel('NDVI')
+#     plt.legend()
+#     plt.grid(True)
+#     plt.tight_layout()
 
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-from google.colab import files
+#     plot_filename = f"NDVI_plot_{step}.png"
+#     plt.savefig(plot_filename)
+#     plt.close()
+#     files.download(plot_filename)
 
-# 1. Export separate CSVs for each NDVI prediction step
-for step in preds:
-    df_step = pd.DataFrame({
-        'Date': model_df['date'].iloc[-len(Y_test):].values,
-        'Actual NDVI': Y_test[step].values,
-        'Predicted NDVI': preds[step]
-    })
-    filename = f"NDVI_predictions_{step}.csv"
-    df_step.to_csv(filename, index=False)
-    files.download(filename)
-
-# 2. Save and download plot for each prediction step
-for step in preds:
-    plt.figure(figsize=(12, 4))
-    plt.plot(Y_test[step].values, label='Actual NDVI', linewidth=2)
-    plt.plot(preds[step], label='Predicted NDVI', linestyle='--')
-    plt.title(f'NDVI Forecast Plot: {step}')
-    plt.xlabel('Time Steps')
-    plt.ylabel('NDVI')
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-
-    plot_filename = f"NDVI_plot_{step}.png"
-    plt.savefig(plot_filename)
-    plt.close()
-    files.download(plot_filename)
-
-from google.colab import files
-files.download("NDVI_forecast_metrics.csv")
+# from google.colab import files
+# files.download("NDVI_forecast_metrics.csv")
