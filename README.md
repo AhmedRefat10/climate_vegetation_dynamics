@@ -58,6 +58,8 @@ climate_vegetation_dynamics/
 ## Getting Started
 
 ### local development setup instructions
+  - Clone the project
+  - Move to the project directory `cd climate_vegetation_dynamics`
   - pip install -r requirements.txt
   - streamlit run streamlit_app/dashboard.py
 
