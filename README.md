@@ -57,11 +57,9 @@ climate_vegetation_dynamics/
 
 ## Getting Started
 
-### Install Dependencies
-
-pip install -r requirements.txt
-streamlit run streamlit_app/dashboard.py
-python climate_model.py
+### local development setup instructions
+  - pip install -r requirements.txt
+  - streamlit run streamlit_app/dashboard.py
 
 ## Dependencies
 
